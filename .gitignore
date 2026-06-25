@@ -10,5 +10,5 @@ wheels/
 .venv
 
 # SQLite database
-*.db
+
 
