@@ -11,11 +11,28 @@ export interface FridgeItem {
   updated_at: string;
 }
 
-export interface FridgeItemInput {
+export interface FoodTemplate {
+  id: number;
+  name: string;
+  category: string | null;
+  default_unit: string | null;
+  portions_per_unit: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FoodTemplateInput {
   name: string;
   category?: string | null;
+  default_unit?: string | null;
+  portions_per_unit?: number;
+}
+
+export interface FridgeItemInput {
+  name: string;
   quantity: number;
+  category?: string | null;
   unit?: string | null;
-  portions_total: number;
+  portions_total?: number | null;
   expire_date?: string | null;
 }

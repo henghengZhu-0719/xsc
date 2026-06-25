@@ -13,6 +13,10 @@ function isExpiringSoon(expireDate: string | null): boolean {
   return diffDays <= 3;
 }
 
+function consumeLabel(category: string | null): string {
+  return category === "奶" ? "喝一次" : "吃一次";
+}
+
 export function FridgeItemCard({ item, onDelete, onConsume }: Props) {
   const ratio =
     item.portions_total > 0 ? item.portions_remaining / item.portions_total : 0;
@@ -55,7 +59,7 @@ export function FridgeItemCard({ item, onDelete, onConsume }: Props) {
           disabled={empty}
           onClick={() => onConsume(item)}
         >
-          吃一次
+          {consumeLabel(item.category)}
         </button>
         <button className="btn btn-sm btn-danger" onClick={() => onDelete(item.id)}>
           删除

@@ -5,10 +5,17 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class FridgeItemCreate(BaseModel):
     name: str = Field(description="食材名称，如鸡蛋、牛肉")
-    category: str | None = Field(default=None, description="食材分类，如肉类、蛋类、蔬菜")
     quantity: float = Field(default=1, description="数量")
-    unit: str | None = Field(default=None, description="单位，如个、克、斤")
-    portions_total: int = Field(default=1, description="总可食用次数，如一包蔬菜可吃 3 次")
+    category: str | None = Field(
+        default=None, description="食材分类；不填则尝试从常用食物模板中匹配"
+    )
+    unit: str | None = Field(
+        default=None, description="单位；不填则尝试从常用食物模板中匹配"
+    )
+    portions_total: int | None = Field(
+        default=None,
+        description="总可食用次数；不填则按 数量 x 模板换算次数 自动计算，无匹配模板时数量与次数一一对应",
+    )
     expire_date: date | None = Field(default=None, description="保质期/过期日期")
 
 
