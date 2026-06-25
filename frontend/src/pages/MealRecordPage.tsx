@@ -22,6 +22,7 @@ export function MealRecordPage() {
   const [date, setDate] = useState(todayStr());
   const [createMealType, setCreateMealType] = useState<string | null>(null);
   const [editing, setEditing] = useState<MealRecord | null>(null);
+  const [showMealTypeChooser, setShowMealTypeChooser] = useState(false);
 
   const loadRecords = async () => {
     setLoading(true);
@@ -60,6 +61,21 @@ export function MealRecordPage() {
 
   const recordsOfDate = records.filter((r) => r.meal_date === date);
 
+  const recordedTypes = MEAL_TYPES.filter((mt) =>
+    recordsOfDate.some((r) => r.meal_type === mt.value)
+  );
+  const missingTypes = MEAL_TYPES.filter((mt) => !recordedTypes.includes(mt));
+
+  const foodTotals = new Map<string, number>();
+  recordsOfDate.forEach((r) =>
+    r.items.forEach((item) => {
+      foodTotals.set(
+        item.food_name,
+        (foodTotals.get(item.food_name) ?? 0) + item.portions_consumed
+      );
+    })
+  );
+
   return (
     <div className="page">
       <header className="page-header">
@@ -85,6 +101,53 @@ export function MealRecordPage() {
           </button>
         )}
       </div>
+
+      {!loading && !error && (
+        <div className="day-summary">
+          <div className="day-summary-text">
+            <p className="day-summary-line">
+              已记录：{recordedTypes.length}/3 餐
+              {recordedTypes.length > 0 && `（${recordedTypes.map((m) => m.label).join("、")}）`}
+            </p>
+            {missingTypes.length > 0 && (
+              <p className="day-summary-line warning">
+                未记录：{missingTypes.map((m) => m.label).join("、")}
+              </p>
+            )}
+            {foodTotals.size > 0 && (
+              <div className="day-summary-tags">
+                {[...foodTotals.entries()].map(([name, qty]) => (
+                  <span key={name} className="tag">
+                    {name} ×{qty}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="day-summary-action">
+            <button className="btn btn-primary" onClick={() => setShowMealTypeChooser(true)}>
+              + 记录一餐
+            </button>
+            {showMealTypeChooser && (
+              <div className="meal-type-chooser">
+                {MEAL_TYPES.map((mt) => (
+                  <button
+                    key={mt.value}
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => {
+                      setCreateMealType(mt.value);
+                      setShowMealTypeChooser(false);
+                    }}
+                  >
+                    {mt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {(createMealType || editing) && (
         <div
@@ -114,32 +177,35 @@ export function MealRecordPage() {
       {error && <p className="hint error">{error}</p>}
 
       {!loading && !error && (
-        <div className="meal-day-columns">
+        <div className="meal-day-list">
           {MEAL_TYPES.map((mt) => {
-            const items = recordsOfDate.filter((r) => r.meal_type === mt.value);
+            const record = recordsOfDate.find((r) => r.meal_type === mt.value);
             return (
-              <div key={mt.value} className="meal-day-column">
-                <div className="meal-day-column-header">
+              <div key={mt.value} className="meal-day-row">
+                <div className="meal-day-row-header">
                   <h3>{mt.label}</h3>
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={() => setCreateMealType(mt.value)}
-                  >
-                    + 添加
-                  </button>
+                  {!record && (
+                    <button
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => setCreateMealType(mt.value)}
+                    >
+                      + 添加{mt.label}
+                    </button>
+                  )}
                 </div>
-                {items.length === 0 && <p className="hint">还没有记录</p>}
-                {items.length > 0 && (
-                  <div className="grid">
-                    {items.map((record) => (
-                      <MealRecordCard
-                        key={record.id}
-                        record={record}
-                        onEdit={setEditing}
-                        onDelete={handleDelete}
-                      />
-                    ))}
-                  </div>
+
+                {!record && (
+                  <p className="meal-day-empty-text">
+                    还没记录{mt.label}，添加今天吃的食物吧
+                  </p>
+                )}
+
+                {record && (
+                  <MealRecordCard
+                    record={record}
+                    onEdit={setEditing}
+                    onDelete={handleDelete}
+                  />
                 )}
               </div>
             );

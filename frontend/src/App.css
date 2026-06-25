@@ -323,7 +323,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .date-nav-input {
@@ -332,37 +332,128 @@
   padding: 6px 10px;
 }
 
-.meal-day-columns {
+/* Day summary */
+.day-summary {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 16px;
-}
-
-.meal-day-column {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   background: var(--primary-bg);
   border-radius: 14px;
-  padding: 14px;
+  padding: 16px 18px;
+  margin-bottom: 24px;
 }
 
-.meal-day-column .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+.day-summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.meal-day-column-header {
+.day-summary-line {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.day-summary-line.warning {
+  color: var(--warning);
+}
+
+.day-summary-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.day-summary-action {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.meal-type-chooser {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+  min-width: 100px;
+}
+
+/* Compact per-meal rows */
+.meal-day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.meal-day-row {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.meal-day-row-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.meal-day-column-header h3 {
+.meal-day-row-header h3 {
   margin: 0;
   font-size: 15px;
-  color: var(--primary-dark);
+  color: var(--text);
+}
+
+.meal-day-empty-text {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+/* Meal food card (inside a row, once recorded) */
+.meal-food-card {
+  margin-top: 8px;
+}
+
+.meal-food-header {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+
+.meal-food-list {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meal-food-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.meal-food-row:last-child {
+  border-bottom: none;
+}
+
+.meal-food-qty {
+  color: var(--text-light);
 }
 
 /* Meal record item picker */
