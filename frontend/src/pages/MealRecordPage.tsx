@@ -2,13 +2,25 @@ import { useEffect, useState } from "react";
 import { mealApi } from "../api/meal";
 import { MealRecordCard } from "../components/MealRecordCard";
 import { MealRecordForm } from "../components/MealRecordForm";
+import { MEAL_TYPES } from "../constants";
 import type { MealRecord, MealRecordInput } from "../types";
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function shiftDate(date: string, days: number): string {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
 
 export function MealRecordPage() {
   const [records, setRecords] = useState<MealRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCreate, setShowCreate] = useState(false);
+  const [date, setDate] = useState(todayStr());
+  const [createMealType, setCreateMealType] = useState<string | null>(null);
   const [editing, setEditing] = useState<MealRecord | null>(null);
 
   const loadRecords = async () => {
@@ -29,7 +41,7 @@ export function MealRecordPage() {
 
   const handleCreate = async (data: MealRecordInput) => {
     await mealApi.create(data);
-    setShowCreate(false);
+    setCreateMealType(null);
     await loadRecords();
   };
 
@@ -46,20 +58,39 @@ export function MealRecordPage() {
     await loadRecords();
   };
 
+  const recordsOfDate = records.filter((r) => r.meal_date === date);
+
   return (
     <div className="page">
       <header className="page-header">
         <h1>三餐记录</h1>
-        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-          + 记一顿饭
-        </button>
       </header>
 
-      {(showCreate || editing) && (
+      <div className="date-nav">
+        <button className="btn btn-sm btn-ghost" onClick={() => setDate(shiftDate(date, -1))}>
+          ‹ 前一天
+        </button>
+        <input
+          type="date"
+          className="date-nav-input"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+        <button className="btn btn-sm btn-ghost" onClick={() => setDate(shiftDate(date, 1))}>
+          后一天 ›
+        </button>
+        {date !== todayStr() && (
+          <button className="btn btn-sm btn-ghost" onClick={() => setDate(todayStr())}>
+            回到今天
+          </button>
+        )}
+      </div>
+
+      {(createMealType || editing) && (
         <div
           className="modal-overlay"
           onClick={() => {
-            setShowCreate(false);
+            setCreateMealType(null);
             setEditing(null);
           }}
         >
@@ -67,9 +98,11 @@ export function MealRecordPage() {
             <h2>{editing ? "编辑记录" : "记一顿饭"}</h2>
             <MealRecordForm
               initial={editing ?? undefined}
+              defaultDate={date}
+              defaultMealType={createMealType ?? undefined}
               onSubmit={editing ? handleUpdate : handleCreate}
               onCancel={() => {
-                setShowCreate(false);
+                setCreateMealType(null);
                 setEditing(null);
               }}
             />
@@ -79,20 +112,40 @@ export function MealRecordPage() {
 
       {loading && <p className="hint">加载中...</p>}
       {error && <p className="hint error">{error}</p>}
-      {!loading && !error && records.length === 0 && (
-        <p className="hint">还没有三餐记录，记一顿饭吧～</p>
-      )}
 
-      <div className="grid">
-        {records.map((record) => (
-          <MealRecordCard
-            key={record.id}
-            record={record}
-            onEdit={setEditing}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      {!loading && !error && (
+        <div className="meal-day-columns">
+          {MEAL_TYPES.map((mt) => {
+            const items = recordsOfDate.filter((r) => r.meal_type === mt.value);
+            return (
+              <div key={mt.value} className="meal-day-column">
+                <div className="meal-day-column-header">
+                  <h3>{mt.label}</h3>
+                  <button
+                    className="btn btn-sm btn-primary"
+                    onClick={() => setCreateMealType(mt.value)}
+                  >
+                    + 添加
+                  </button>
+                </div>
+                {items.length === 0 && <p className="hint">还没有记录</p>}
+                {items.length > 0 && (
+                  <div className="grid">
+                    {items.map((record) => (
+                      <MealRecordCard
+                        key={record.id}
+                        record={record}
+                        onEdit={setEditing}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

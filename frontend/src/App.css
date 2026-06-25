@@ -318,6 +318,53 @@
   margin-top: 10px;
 }
 
+/* Meal day view */
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.date-nav-input {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.meal-day-columns {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.meal-day-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--primary-bg);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.meal-day-column .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.meal-day-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.meal-day-column-header h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--primary-dark);
+}
+
 /* Meal record item picker */
 .meal-item-list {
   display: flex;

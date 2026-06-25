@@ -1,4 +1,3 @@
-import { mealTypeLabel } from "../constants";
 import type { MealRecord } from "../types";
 
 interface Props {
@@ -10,12 +9,6 @@ interface Props {
 export function MealRecordCard({ record, onEdit, onDelete }: Props) {
   return (
     <div className="card">
-      <div className="card-header">
-        <span className="card-title">
-          {record.meal_date} · {mealTypeLabel(record.meal_type)}
-        </span>
-      </div>
-
       <div className="card-body">
         {record.items.length === 0 && !record.extra_food && (
           <p className="card-line">没有记录具体食物</p>

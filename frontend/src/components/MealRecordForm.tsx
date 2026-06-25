@@ -5,18 +5,26 @@ import type { FridgeItem, MealRecord, MealRecordInput } from "../types";
 
 interface Props {
   initial?: MealRecord;
+  defaultDate?: string;
+  defaultMealType?: string;
   onSubmit: (data: MealRecordInput) => Promise<void>;
   onCancel: () => void;
 }
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-export function MealRecordForm({ initial, onSubmit, onCancel }: Props) {
+export function MealRecordForm({
+  initial,
+  defaultDate,
+  defaultMealType,
+  onSubmit,
+  onCancel,
+}: Props) {
   const [fridgeItems, setFridgeItems] = useState<FridgeItem[]>([]);
-  const [mealDate, setMealDate] = useState(initial?.meal_date ?? today());
-  const [mealType, setMealType] = useState(initial?.meal_type ?? MEAL_TYPES[0].value);
+  const [mealDate, setMealDate] = useState(
+    initial?.meal_date ?? defaultDate ?? new Date().toISOString().slice(0, 10)
+  );
+  const [mealType, setMealType] = useState(
+    initial?.meal_type ?? defaultMealType ?? MEAL_TYPES[0].value
+  );
   const [note, setNote] = useState(initial?.note ?? "");
   const [extraFood, setExtraFood] = useState(initial?.extra_food ?? "");
   const [selected, setSelected] = useState<Record<number, number>>(() => {
