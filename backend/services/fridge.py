@@ -18,7 +18,9 @@ def get_items(db: Session, skip: int = 0, limit: int = 100) -> list[models.Fridg
 
 
 def create_item(db: Session, item: schemas.FridgeItemCreate) -> models.FridgeItem:
-    db_item = models.FridgeItem(**item.model_dump())
+    db_item = models.FridgeItem(
+        **item.model_dump(), portions_remaining=item.portions_total
+    )
     db.add(db_item)
     db.commit()
     db.refresh(db_item)

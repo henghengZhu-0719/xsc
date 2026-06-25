@@ -1,0 +1,35 @@
+:root {
+  --text: #2f3e3a;
+  --text-light: #6b7d77;
+  --bg: #f4faf7;
+  --card-bg: #ffffff;
+  --border: #dcebe4;
+  --primary: #2bb673;
+  --primary-dark: #1f9b60;
+  --primary-bg: #e6f7ee;
+  --danger: #e0594f;
+  --warning: #d97706;
+  --shadow: 0 4px 14px rgba(43, 182, 115, 0.1);
+
+  font: 16px/1.5 system-ui, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button {
+  font: inherit;
+}
+
+input,
+select {
+  font: inherit;
+}
