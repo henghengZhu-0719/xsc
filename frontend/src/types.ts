@@ -36,3 +36,34 @@ export interface FridgeItemInput {
   portions_total?: number | null;
   expire_date?: string | null;
 }
+
+export interface MealRecordItem {
+  id: number;
+  fridge_item_id: number | null;
+  food_name: string;
+  portions_consumed: number;
+}
+
+export interface MealRecordItemInput {
+  fridge_item_id: number;
+  portions_consumed: number;
+}
+
+export interface MealRecord {
+  id: number;
+  meal_date: string;
+  meal_type: string;
+  note: string | null;
+  extra_food: string | null;
+  items: MealRecordItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MealRecordInput {
+  meal_date: string;
+  meal_type: string;
+  note?: string | null;
+  extra_food?: string | null;
+  items?: MealRecordItemInput[];
+}

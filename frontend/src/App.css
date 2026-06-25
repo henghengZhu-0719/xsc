@@ -1,3 +1,30 @@
+.tab-bar {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px 24px 0;
+  display: flex;
+  gap: 8px;
+}
+
+.tab-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tab-btn:hover {
+  background: var(--primary-bg);
+}
+
+.tab-btn-active {
+  background: var(--primary);
+  color: white;
+}
+
 .page {
   max-width: 1080px;
   margin: 0 auto;
@@ -289,6 +316,40 @@
 
 .advanced .form-row {
   margin-top: 10px;
+}
+
+/* Meal record item picker */
+.meal-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.meal-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.meal-item-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.meal-item-portions {
+  width: 60px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
 }
 
 /* Template table */
