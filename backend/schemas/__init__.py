@@ -4,6 +4,13 @@ from backend.schemas.food_template import (
     FoodTemplateUpdate,
 )
 from backend.schemas.fridge import FridgeItemCreate, FridgeItemOut, FridgeItemUpdate
+from backend.schemas.meal import (
+    MealRecordCreate,
+    MealRecordItemCreate,
+    MealRecordItemOut,
+    MealRecordOut,
+    MealRecordUpdate,
+)
 
 __all__ = [
     "FridgeItemCreate",
@@ -12,4 +19,9 @@ __all__ = [
     "FoodTemplateCreate",
     "FoodTemplateUpdate",
     "FoodTemplateOut",
+    "MealRecordCreate",
+    "MealRecordUpdate",
+    "MealRecordOut",
+    "MealRecordItemCreate",
+    "MealRecordItemOut",
 ]

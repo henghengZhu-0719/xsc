@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.core.database import Base, SessionLocal, engine
-from backend.routers import food_template, fridge
+from backend.routers import food_template, fridge, meal
 from backend.services.food_template import seed_default_templates
 
 Base.metadata.create_all(bind=engine)
@@ -24,3 +24,4 @@ app.add_middleware(
 
 app.include_router(fridge.router)
 app.include_router(food_template.router)
+app.include_router(meal.router)
