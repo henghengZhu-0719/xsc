@@ -88,20 +88,44 @@ async def daily_summary(date: date_type = Query(...), db: Session = Depends(get_
 指出截至目前明显不足的 1-2 个营养点，说明原因。
 
 💡 **接下来怎么吃**
-根据当前时间，针对今天剩余餐次给出具体建议（推荐具体食物/搭配方式）。若今天已结束，则给出明日调整方向。
+根据当前时间，针对今天剩余餐次给出具体建议。**优先从「冰箱现有食材」中推荐**，给出具体的食物搭配方式。若今天已结束，则结合冰箱库存给出明日调整方向。
 
 # 输出要求
 - 语气像营养师朋友，专业但不说教
 - 不捏造具体克数或热量数字
 - 总字数控制在 280 字以内\
 """
-    now_cst = datetime.now(timezone(timedelta(hours=8)))
-    prompt_user = (
-        f"当前时间：{now_cst.strftime('%Y-%m-%d %H:%M')}（北京时间）\n"
-        f"分析日期：{date}\n"
-        + "\n".join(meal_lines)
-        + "\n\n请分析今天的营养情况并给出建议。"
+    # 查冰箱中还有剩余的食材
+    available_fridge = (
+        db.query(models.FridgeItem)
+        .filter(models.FridgeItem.portions_remaining > 0)
+        .order_by(models.FridgeItem.category, models.FridgeItem.name)
+        .all()
     )
+    fridge_by_cat: dict[str, list[str]] = {}
+    for fi in available_fridge:
+        cat = fi.category or "其他"
+        fridge_by_cat.setdefault(cat, []).append(
+            f"{fi.name}(剩余{fi.portions_remaining}次)"
+        )
+
+    now_cst = datetime.now(timezone(timedelta(hours=8)))
+    prompt_parts = [
+        f"当前时间：{now_cst.strftime('%Y-%m-%d %H:%M')}（北京时间）",
+        f"分析日期：{date}",
+        "",
+        "食物摄入明细：",
+        *meal_lines,
+    ]
+    if fridge_by_cat:
+        prompt_parts.append("\n冰箱现有食材（可用于推荐）：")
+        for cat, items in sorted(fridge_by_cat.items()):
+            prompt_parts.append(f"  · {cat}：{'、'.join(items)}")
+    else:
+        prompt_parts.append("\n冰箱现有食材：（暂无）")
+    prompt_parts.append("\n请分析今天的营养情况并给出建议。")
+
+    prompt_user = "\n".join(prompt_parts)
 
     try:
         summary = await ai_service.chat(
