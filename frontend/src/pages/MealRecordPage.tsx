@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { aiApi, type DailySummaryData } from "../api/ai";
 import { mealApi } from "../api/meal";
 import { MealRecordCard } from "../components/MealRecordCard";
 import { MealRecordForm } from "../components/MealRecordForm";
-import { MEAL_TYPES } from "../constants";
+import { CATEGORY_EMOJI, MEAL_TYPES } from "../constants";
 import type { MealRecord, MealRecordInput } from "../types";
 
 const MEAL_ICONS: Record<string, string> = {
@@ -27,6 +28,11 @@ function formatDateDisplay(dateStr: string): string {
   return `${d.getMonth() + 1}月${d.getDate()}日 ${days[d.getDay()]}`;
 }
 
+function formatUpdatedAt(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")} 更新`;
+}
+
 export function MealRecordPage() {
   const [records, setRecords] = useState<MealRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +41,10 @@ export function MealRecordPage() {
   const [createMealType, setCreateMealType] = useState<string | null>(null);
   const [editing, setEditing] = useState<MealRecord | null>(null);
   const [showMealTypeChooser, setShowMealTypeChooser] = useState(false);
+
+  const [summary, setSummary] = useState<DailySummaryData | null>(null);
+  const [summaryUpdating, setSummaryUpdating] = useState(false);
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadRecords = async () => {
     setLoading(true);
@@ -48,14 +58,54 @@ export function MealRecordPage() {
     }
   };
 
+  const loadSummary = useCallback(async (d: string) => {
+    const result = await aiApi.getSavedSummary(d).catch(() => null);
+    setSummary(result);
+  }, []);
+
+  // After meal CRUD: poll until summary.updated_at is newer than triggerTime
+  const pollUntilRefreshed = useCallback(
+    (d: string, triggerTime: number, attempts = 0) => {
+      if (attempts >= 12) {
+        setSummaryUpdating(false);
+        return;
+      }
+      pollTimerRef.current = setTimeout(async () => {
+        const result = await aiApi.getSavedSummary(d).catch(() => null);
+        if (result && new Date(result.updated_at).getTime() > triggerTime) {
+          setSummary(result);
+          setSummaryUpdating(false);
+        } else {
+          pollUntilRefreshed(d, triggerTime, attempts + 1);
+        }
+      }, 3000);
+    },
+    []
+  );
+
   useEffect(() => {
     loadRecords();
   }, []);
+
+  useEffect(() => {
+    setSummary(null);
+    setSummaryUpdating(false);
+    if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+    loadSummary(date);
+  }, [date, loadSummary]);
+
+  const afterMealOp = (opDate: string) => {
+    const triggerTime = Date.now();
+    setSummaryUpdating(true);
+    if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+    pollUntilRefreshed(opDate, triggerTime);
+  };
 
   const handleCreate = async (data: MealRecordInput) => {
     await mealApi.create(data);
     setCreateMealType(null);
     await loadRecords();
+    afterMealOp(data.meal_date);
   };
 
   const handleUpdate = async (data: MealRecordInput) => {
@@ -63,16 +113,18 @@ export function MealRecordPage() {
     await mealApi.update(editing.id, data);
     setEditing(null);
     await loadRecords();
+    afterMealOp(data.meal_date);
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("确定删除这条三餐记录吗？（关联消耗的可食用次数会加回冰箱）")) return;
+    const record = records.find((r) => r.id === id);
     await mealApi.remove(id);
     await loadRecords();
+    if (record) afterMealOp(record.meal_date);
   };
 
   const recordsOfDate = records.filter((r) => r.meal_date === date);
-
   const recordedTypes = MEAL_TYPES.filter((mt) =>
     recordsOfDate.some((r) => r.meal_type === mt.value)
   );
@@ -131,7 +183,8 @@ export function MealRecordPage() {
           <div className="day-summary-text">
             <p className="day-summary-line">
               已记录：{recordedTypes.length}/3 餐
-              {recordedTypes.length > 0 && `（${recordedTypes.map((m) => m.label).join("、")}）`}
+              {recordedTypes.length > 0 &&
+                `（${recordedTypes.map((m) => m.label).join("、")}）`}
             </p>
             {missingTypes.length > 0 && (
               <p className="day-summary-line warning">
@@ -172,6 +225,51 @@ export function MealRecordPage() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* AI 营养分析面板：有记录时始终展示 */}
+      {!loading && !error && recordsOfDate.length > 0 && (
+        <div className="ai-panel">
+          <div className="ai-panel-header">
+            <span className="ai-panel-title">
+              <span className="ic ic-sparkle" />
+              AI 营养分析
+            </span>
+            {summary && !summaryUpdating && (
+              <span className="ai-panel-time">{formatUpdatedAt(summary.updated_at)}</span>
+            )}
+          </div>
+
+          {summary && summary.categories.length > 0 && (
+            <div className="ai-categories">
+              <span className="ai-categories-label">今日摄入：</span>
+              {summary.categories.map((cat) => (
+                <span key={cat} className="tag ai-category-tag">
+                  {CATEGORY_EMOJI[cat] ?? ""} {cat}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {summaryUpdating && (
+            <div className="ai-loading">
+              <span className="ic ic-sparkle ai-loading-icon" />
+              AI 正在分析，稍等片刻…
+            </div>
+          )}
+
+          {!summaryUpdating && summary && (
+            <div className="ai-summary-text">
+              {summary.summary_text.split("\n").filter(Boolean).map((line, i) => (
+                <p key={i}>{line}</p>
+              ))}
+            </div>
+          )}
+
+          {!summaryUpdating && !summary && (
+            <p className="ai-hint">记录完餐后 AI 将自动生成今日饮食分析</p>
+          )}
         </div>
       )}
 

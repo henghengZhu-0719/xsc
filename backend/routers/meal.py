@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend import schemas
 from backend.core.database import get_db
 from backend.services import meal as meal_service
+from backend.services.daily_summary import regenerate_summary
 
 router = APIRouter(prefix="/meal-records", tags=["三餐记录"])
 
@@ -14,8 +15,14 @@ router = APIRouter(prefix="/meal-records", tags=["三餐记录"])
     summary="新增三餐记录",
     description="记录一顿饭吃了什么；如果关联了冰箱食材，会自动扣减对应的可食用次数。",
 )
-def create_meal_record(meal: schemas.MealRecordCreate, db: Session = Depends(get_db)):
-    return meal_service.create_meal_record(db, meal)
+async def create_meal_record(
+    meal: schemas.MealRecordCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    record = meal_service.create_meal_record(db, meal)
+    background_tasks.add_task(regenerate_summary, meal.meal_date)
+    return record
 
 
 @router.get(
@@ -45,13 +52,18 @@ def get_meal_record(meal_record_id: int, db: Session = Depends(get_db)):
     summary="更新三餐记录",
     description="如果传了 items，会先把原来消耗的可食用次数加回冰箱，再按新的 items 重新扣减。",
 )
-def update_meal_record(
-    meal_record_id: int, meal: schemas.MealRecordUpdate, db: Session = Depends(get_db)
+async def update_meal_record(
+    meal_record_id: int,
+    meal: schemas.MealRecordUpdate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
 ):
     db_meal = meal_service.get_meal_record(db, meal_record_id)
     if db_meal is None:
         raise HTTPException(status_code=404, detail="记录不存在")
-    return meal_service.update_meal_record(db, db_meal, meal)
+    updated = meal_service.update_meal_record(db, db_meal, meal)
+    background_tasks.add_task(regenerate_summary, updated.meal_date)
+    return updated
 
 
 @router.delete(
@@ -60,8 +72,14 @@ def update_meal_record(
     summary="删除三餐记录",
     description="删除时会把扣减的可食用次数加回冰箱。",
 )
-def delete_meal_record(meal_record_id: int, db: Session = Depends(get_db)):
+async def delete_meal_record(
+    meal_record_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     db_meal = meal_service.get_meal_record(db, meal_record_id)
     if db_meal is None:
         raise HTTPException(status_code=404, detail="记录不存在")
+    meal_date = db_meal.meal_date
     meal_service.delete_meal_record(db, db_meal)
+    background_tasks.add_task(regenerate_summary, meal_date)

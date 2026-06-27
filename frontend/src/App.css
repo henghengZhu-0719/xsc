@@ -196,6 +196,11 @@
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E");
 }
 
+.ic-sparkle {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z'/%3E%3C/svg%3E");
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -706,6 +711,94 @@
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 4px 8px;
+}
+
+/* AI 营养分析面板 */
+.ai-panel {
+  background: linear-gradient(135deg, #f0fdf7 0%, #e8f5fe 100%);
+  border: 1px solid #c3e8d8;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.ai-panel-time {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.ai-categories {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ai-categories-label {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.ai-category-tag {
+  font-size: 13px;
+}
+
+.ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-light);
+  padding: 4px 0;
+}
+
+.ai-loading-icon {
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.ai-summary-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.7;
+  border-top: 1px solid #c3e8d8;
+  padding-top: 10px;
+}
+
+.ai-summary-text p {
+  margin: 0 0 6px;
+}
+
+.ai-summary-text p:last-child {
+  margin-bottom: 0;
+}
+
+.ai-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-light);
 }
 
 /* Template table */
