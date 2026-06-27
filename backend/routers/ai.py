@@ -6,9 +6,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from backend import models
 from backend.core.database import get_db
-
-DEEPSEEK_API_KEY = "sk-0e145e5272e147bb8e63b486ca265474"
-DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+from backend.services import ai as ai_service
 
 MEAL_LABELS = {"breakfast": "早餐", "lunch": "午餐", "dinner": "晚餐"}
 
@@ -30,7 +28,6 @@ async def daily_summary(date: date_type = Query(...), db: Session = Depends(get_
             "stats": {"meal_types": [], "foods": [], "categories": []},
         }
 
-    # 查询关联的冰箱食材以获取分类信息
     fridge_item_ids = {
         item.fridge_item_id
         for r in records
@@ -64,11 +61,11 @@ async def daily_summary(date: date_type = Query(...), db: Session = Depends(get_
                 all_foods.append(item.food_name)
         if record.extra_food:
             food_parts.append(f"额外：{record.extra_food}")
-        meal_lines.append(f"【{meal_label}】{'、'.join(food_parts) if food_parts else '（无详细食材）'}")
+        meal_lines.append(
+            f"【{meal_label}】{'、'.join(food_parts) if food_parts else '（无详细食材）'}"
+        )
         if record.note:
             meal_lines.append(f"  备注：{record.note}")
-
-    prompt_user = f"日期：{date}\n" + "\n".join(meal_lines) + "\n\n请分析今天的营养情况并给出建议。"
 
     system_prompt = (
         "你是一个亲切的营养顾问。根据用户今天的饮食记录，给出简短的营养分析和改善建议。\n"
@@ -80,27 +77,18 @@ async def daily_summary(date: date_type = Query(...), db: Session = Depends(get_
         "- 语气轻松友好，像朋友聊天，不要说教\n"
         "- 回复控制在180字以内"
     )
+    prompt_user = (
+        f"日期：{date}\n" + "\n".join(meal_lines) + "\n\n请分析今天的营养情况并给出建议。"
+    )
 
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.post(
-                f"{DEEPSEEK_BASE_URL}/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": "deepseek-chat",
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": prompt_user},
-                    ],
-                    "max_tokens": 400,
-                    "temperature": 0.7,
-                },
-            )
-            resp.raise_for_status()
-            summary = resp.json()["choices"][0]["message"]["content"]
+        summary = await ai_service.chat(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt_user},
+            ],
+            max_tokens=400,
+        )
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="AI 服务响应超时，请稍后重试")
     except httpx.HTTPStatusError as e:

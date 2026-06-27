@@ -1,14 +1,12 @@
 import json
 from datetime import date as date_type, datetime
 
-import httpx
 from sqlalchemy.orm import Session, selectinload
 
 from backend import models
 from backend.core.database import SessionLocal
+from backend.services import ai as ai_service
 
-DEEPSEEK_API_KEY = "sk-0e145e5272e147bb8e63b486ca265474"
-DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 MEAL_LABELS = {"breakfast": "早餐", "lunch": "午餐", "dinner": "晚餐"}
 
 SYSTEM_PROMPT = (
@@ -89,25 +87,13 @@ async def regenerate_summary(date: date_type) -> None:
         prompt = f"日期：{date}\n" + "\n".join(meal_lines) + "\n\n请分析今天的营养情况并给出建议。"
 
         try:
-            async with httpx.AsyncClient(timeout=30) as client:
-                resp = await client.post(
-                    f"{DEEPSEEK_BASE_URL}/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "model": "deepseek-chat",
-                        "messages": [
-                            {"role": "system", "content": SYSTEM_PROMPT},
-                            {"role": "user", "content": prompt},
-                        ],
-                        "max_tokens": 400,
-                        "temperature": 0.7,
-                    },
-                )
-                resp.raise_for_status()
-                summary_text = resp.json()["choices"][0]["message"]["content"]
+            summary_text = await ai_service.chat(
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=400,
+            )
         except Exception:
             return  # Fail silently; don't break meal recording
 
