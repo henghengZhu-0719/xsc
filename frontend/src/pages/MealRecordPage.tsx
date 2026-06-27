@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import Markdown from "react-markdown";
 import { aiApi, type DailySummaryData } from "../api/ai";
 import { mealApi } from "../api/meal";
 import { MealRecordCard } from "../components/MealRecordCard";
@@ -125,20 +126,6 @@ export function MealRecordPage() {
   };
 
   const recordsOfDate = records.filter((r) => r.meal_date === date);
-  const recordedTypes = MEAL_TYPES.filter((mt) =>
-    recordsOfDate.some((r) => r.meal_type === mt.value)
-  );
-  const missingTypes = MEAL_TYPES.filter((mt) => !recordedTypes.includes(mt));
-
-  const foodTotals = new Map<string, number>();
-  recordsOfDate.forEach((r) =>
-    r.items.forEach((item) => {
-      foodTotals.set(
-        item.food_name,
-        (foodTotals.get(item.food_name) ?? 0) + item.portions_consumed
-      );
-    })
-  );
 
   return (
     <div className="page">
@@ -176,57 +163,31 @@ export function MealRecordPage() {
             今天
           </button>
         )}
-      </div>
 
-      {!loading && !error && (
-        <div className="day-summary">
-          <div className="day-summary-text">
-            <p className="day-summary-line">
-              已记录：{recordedTypes.length}/3 餐
-              {recordedTypes.length > 0 &&
-                `（${recordedTypes.map((m) => m.label).join("、")}）`}
-            </p>
-            {missingTypes.length > 0 && (
-              <p className="day-summary-line warning">
-                未记录：{missingTypes.map((m) => m.label).join("、")}
-              </p>
-            )}
-            {foodTotals.size > 0 && (
-              <div className="day-summary-tags">
-                {[...foodTotals.entries()].map(([name, qty]) => (
-                  <span key={name} className="tag">
-                    {name} ×{qty}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="day-summary-action">
-            <button className="btn btn-primary" onClick={() => setShowMealTypeChooser(true)}>
-              <span className="ic ic-plus" />
-              记录一餐
-            </button>
-            {showMealTypeChooser && (
-              <div className="meal-type-chooser">
-                {MEAL_TYPES.map((mt) => (
-                  <button
-                    key={mt.value}
-                    className="btn btn-sm btn-ghost"
-                    onClick={() => {
-                      setCreateMealType(mt.value);
-                      setShowMealTypeChooser(false);
-                    }}
-                  >
-                    <span className={`ic ${MEAL_ICONS[mt.value]}`} />
-                    {mt.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="date-nav-record">
+          <button className="btn btn-primary btn-sm" onClick={() => setShowMealTypeChooser(true)}>
+            <span className="ic ic-plus" />
+            记录一餐
+          </button>
+          {showMealTypeChooser && (
+            <div className="meal-type-chooser">
+              {MEAL_TYPES.map((mt) => (
+                <button
+                  key={mt.value}
+                  className="btn btn-sm btn-ghost"
+                  onClick={() => {
+                    setCreateMealType(mt.value);
+                    setShowMealTypeChooser(false);
+                  }}
+                >
+                  <span className={`ic ${MEAL_ICONS[mt.value]}`} />
+                  {mt.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* AI 营养分析面板：有记录时始终展示 */}
       {!loading && !error && recordsOfDate.length > 0 && (
@@ -261,9 +222,7 @@ export function MealRecordPage() {
 
           {!summaryUpdating && summary && (
             <div className="ai-summary-text">
-              {summary.summary_text.split("\n").filter(Boolean).map((line, i) => (
-                <p key={i}>{line}</p>
-              ))}
+              <Markdown>{summary.summary_text}</Markdown>
             </div>
           )}
 

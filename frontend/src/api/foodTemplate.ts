@@ -1,6 +1,6 @@
 import type { FoodTemplate, FoodTemplateInput } from "../types";
 
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
