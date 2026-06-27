@@ -7,7 +7,6 @@ DEEPSEEK_MODEL = "deepseek-chat"
 
 async def chat(
     messages: list[dict],
-    max_tokens: int = 500,
     temperature: float = 0.7,
 ) -> str:
     """Call DeepSeek chat completion. Returns the assistant reply text.
@@ -25,7 +24,6 @@ async def chat(
             json={
                 "model": DEEPSEEK_MODEL,
                 "messages": messages,
-                "max_tokens": max_tokens,
                 "temperature": temperature,
             },
         )

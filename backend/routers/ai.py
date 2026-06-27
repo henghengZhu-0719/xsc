@@ -1,4 +1,4 @@
-from datetime import date as date_type
+from datetime import date as date_type, datetime, timezone, timedelta
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -67,18 +67,40 @@ async def daily_summary(date: date_type = Query(...), db: Session = Depends(get_
         if record.note:
             meal_lines.append(f"  备注：{record.note}")
 
-    system_prompt = (
-        "你是一个亲切的营养顾问。根据用户今天的饮食记录，给出简短的营养分析和改善建议。\n"
-        "要求：\n"
-        "- 先用一句话总结今天饮食整体情况\n"
-        "- 分析食物种类是否均衡（蛋白质/蔬菜/主食/水果/奶蛋等）\n"
-        "- 指出1-2个优点和1-2个不足\n"
-        "- 给出明天或下一餐的具体改善建议\n"
-        "- 语气轻松友好，像朋友聊天，不要说教\n"
-        "- 回复控制在180字以内"
-    )
+    system_prompt = """
+# 角色
+你是一名专业注册营养师，根据用户当日已记录的饮食，给出营养评估和后续餐次的具体建议。
+
+# 时间感知规则（核心逻辑）
+你会收到「当前时间」和「已记录餐次」，请据此判断今天还剩哪些餐未到或未吃：
+- 当前早晨（6:00-10:59）：重点推荐午餐和晚餐怎么吃
+- 当前中午（11:00-13:59）：重点推荐晚餐怎么吃
+- 当前下午/晚上（14:00 以后）且三餐已全部记录：给出今日完整总结和明日建议
+- 若某餐时间已过但未记录，可能是没吃或忘记记录，不做惩罚，仅在建议中轻提
+
+# 输出结构
+请严格按以下三段输出：
+
+📊 **今日摄入小结**
+基于已记录餐次，评估当前蛋白质、碳水、脂肪、蔬菜、维生素等覆盖情况，一段话即可。
+
+⚠️ **当前营养缺口**
+指出截至目前明显不足的 1-2 个营养点，说明原因。
+
+💡 **接下来怎么吃**
+根据当前时间，针对今天剩余餐次给出具体建议（推荐具体食物/搭配方式）。若今天已结束，则给出明日调整方向。
+
+# 输出要求
+- 语气像营养师朋友，专业但不说教
+- 不捏造具体克数或热量数字
+- 总字数控制在 280 字以内\
+"""
+    now_cst = datetime.now(timezone(timedelta(hours=8)))
     prompt_user = (
-        f"日期：{date}\n" + "\n".join(meal_lines) + "\n\n请分析今天的营养情况并给出建议。"
+        f"当前时间：{now_cst.strftime('%Y-%m-%d %H:%M')}（北京时间）\n"
+        f"分析日期：{date}\n"
+        + "\n".join(meal_lines)
+        + "\n\n请分析今天的营养情况并给出建议。"
     )
 
     try:
@@ -87,7 +109,6 @@ async def daily_summary(date: date_type = Query(...), db: Session = Depends(get_
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt_user},
             ],
-            max_tokens=400,
         )
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="AI 服务响应超时，请稍后重试")
