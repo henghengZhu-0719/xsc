@@ -1,4 +1,4 @@
-import { FILTER_CATEGORIES } from "../constants";
+import { CATEGORY_EMOJI, FILTER_CATEGORIES } from "../constants";
 
 interface Props {
   value: string;
@@ -14,7 +14,7 @@ export function CategoryFilter({ value, onChange }: Props) {
           className={`filter-btn ${value === c ? "filter-btn-active" : ""}`}
           onClick={() => onChange(c)}
         >
-          {c}
+          {CATEGORY_EMOJI[c]} {c}
         </button>
       ))}
     </div>

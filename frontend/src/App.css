@@ -1,31 +1,33 @@
-.tab-bar {
+.app-bar {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 20px 24px 0;
+  padding: 16px 24px 0;
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.tab-btn {
+.app-bar-title {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  border: none;
-  background: transparent;
-  color: var(--text-light);
-  font-weight: 600;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-dark);
 }
 
-.tab-btn:hover {
-  background: var(--primary-bg);
+.fridge-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  overflow-y: auto;
+  z-index: 100;
+  animation: slide-in-right 0.22s ease;
 }
 
-.tab-btn-active {
-  background: var(--primary);
-  color: white;
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
 .page {
@@ -39,6 +41,12 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
+}
+
+.page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .header-actions {
@@ -257,6 +265,14 @@
 .card-title {
   font-size: 17px;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-category-icon {
+  font-size: 20px;
+  line-height: 1;
 }
 
 .tag {

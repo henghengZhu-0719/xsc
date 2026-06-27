@@ -6,7 +6,11 @@ import { FridgeItemForm } from "../components/FridgeItemForm";
 import { FoodTemplatePage } from "./FoodTemplatePage";
 import type { FridgeItem, FridgeItemInput } from "../types";
 
-export function FridgePage() {
+interface Props {
+  onClose?: () => void;
+}
+
+export function FridgePage({ onClose }: Props) {
   const [items, setItems] = useState<FridgeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +59,15 @@ export function FridgePage() {
   return (
     <div className="page">
       <header className="page-header">
-        <h1>我的冰箱</h1>
+        <div className="page-header-left">
+          {onClose && (
+            <button className="btn btn-ghost btn-sm" onClick={onClose}>
+              <span className="ic ic-chevron-left" />
+              返回
+            </button>
+          )}
+          <h1>🧊 我的冰箱</h1>
+        </div>
         <div className="header-actions">
           <button className="btn btn-ghost" onClick={() => setShowTemplates(true)}>
             <span className="ic ic-template" />

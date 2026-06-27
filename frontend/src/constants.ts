@@ -2,6 +2,16 @@ export const CATEGORIES = ["肉", "蛋", "奶", "蔬菜", "水果", "主食"] as
 
 export const FILTER_CATEGORIES = ["全部", "肉", "蛋", "奶", "蔬菜", "水果"] as const;
 
+export const CATEGORY_EMOJI: Record<string, string> = {
+  全部: "🧊",
+  肉: "🥩",
+  蛋: "🥚",
+  奶: "🥛",
+  蔬菜: "🥦",
+  水果: "🍎",
+  主食: "🍚",
+};
+
 export const MEAL_TYPES = [
   { value: "breakfast", label: "早餐" },
   { value: "lunch", label: "午餐" },

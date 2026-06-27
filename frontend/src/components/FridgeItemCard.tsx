@@ -1,3 +1,4 @@
+import { CATEGORY_EMOJI } from "../constants";
 import type { FridgeItem } from "../types";
 
 interface Props {
@@ -26,7 +27,12 @@ export function FridgeItemCard({ item, onDelete, onConsume }: Props) {
   return (
     <div className={`card ${empty ? "card-empty" : ""}`}>
       <div className="card-header">
-        <span className="card-title">{item.name}</span>
+        <span className="card-title">
+          {item.category && CATEGORY_EMOJI[item.category] && (
+            <span className="card-category-icon">{CATEGORY_EMOJI[item.category]}</span>
+          )}
+          {item.name}
+        </span>
         {item.category && <span className="tag">{item.category}</span>}
       </div>
 
