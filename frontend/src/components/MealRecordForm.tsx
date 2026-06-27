@@ -85,6 +85,7 @@ export function MealRecordForm({
           <input
             type="date"
             value={mealDate}
+            max={new Date().toISOString().slice(0, 10)}
             onChange={(e) => setMealDate(e.target.value)}
             required
           />
@@ -149,9 +150,11 @@ export function MealRecordForm({
 
       <div className="form-actions">
         <button type="button" className="btn btn-ghost" onClick={onCancel}>
+          <span className="ic ic-close" />
           取消
         </button>
         <button type="submit" className="btn btn-primary" disabled={submitting}>
+          <span className="ic ic-check" />
           {submitting ? "保存中..." : "保存"}
         </button>
       </div>

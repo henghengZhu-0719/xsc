@@ -58,10 +58,12 @@ export function FridgePage() {
         <h1>我的冰箱</h1>
         <div className="header-actions">
           <button className="btn btn-ghost" onClick={() => setShowTemplates(true)}>
+            <span className="ic ic-template" />
             常用食物模板
           </button>
           <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-            + 添加食材
+            <span className="ic ic-plus" />
+            添加食材
           </button>
         </div>
       </header>

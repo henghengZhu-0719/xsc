@@ -4,8 +4,8 @@ import { MealRecordPage } from "./pages/MealRecordPage";
 import "./App.css";
 
 const TABS = [
-  { key: "fridge", label: "我的冰箱" },
-  { key: "meals", label: "三餐记录" },
+  { key: "fridge", label: "我的冰箱", icon: "ic-fridge" },
+  { key: "meals", label: "三餐记录", icon: "ic-plate" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -22,6 +22,7 @@ function App() {
             className={`tab-btn ${tab === t.key ? "tab-btn-active" : ""}`}
             onClick={() => setTab(t.key)}
           >
+            <span className={`ic ${t.icon}`} />
             {t.label}
           </button>
         ))}

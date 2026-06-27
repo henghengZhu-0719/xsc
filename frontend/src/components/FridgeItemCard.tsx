@@ -48,7 +48,12 @@ export function FridgeItemCard({ item, onDelete, onConsume }: Props) {
         {item.expire_date && (
           <p className={`card-line ${expiringSoon ? "warning" : ""}`}>
             保质期：{item.expire_date}
-            {expiringSoon && " ⚠ 即将到期"}
+            {expiringSoon && (
+              <>
+                {" "}
+                <span className="ic ic-warning" /> 即将到期
+              </>
+            )}
           </p>
         )}
       </div>
@@ -59,9 +64,11 @@ export function FridgeItemCard({ item, onDelete, onConsume }: Props) {
           disabled={empty}
           onClick={() => onConsume(item)}
         >
+          <span className={`ic ${item.category === "奶" ? "ic-cup" : "ic-utensils"}`} />
           {consumeLabel(item.category)}
         </button>
         <button className="btn btn-sm btn-danger" onClick={() => onDelete(item.id)}>
+          <span className="ic ic-trash" />
           删除
         </button>
       </div>

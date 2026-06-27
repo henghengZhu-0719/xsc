@@ -5,6 +5,12 @@ import { MealRecordForm } from "../components/MealRecordForm";
 import { MEAL_TYPES } from "../constants";
 import type { MealRecord, MealRecordInput } from "../types";
 
+const MEAL_ICONS: Record<string, string> = {
+  breakfast: "ic-cup",
+  lunch: "ic-sun",
+  dinner: "ic-moon",
+};
+
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -13,6 +19,12 @@ function shiftDate(date: string, days: number): string {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   return d.toISOString().slice(0, 10);
+}
+
+function formatDateDisplay(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00");
+  const days = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  return `${d.getMonth() + 1}月${d.getDate()}日 ${days[d.getDay()]}`;
 }
 
 export function MealRecordPage() {
@@ -78,26 +90,38 @@ export function MealRecordPage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <h1>三餐记录</h1>
-      </header>
-
       <div className="date-nav">
-        <button className="btn btn-sm btn-ghost" onClick={() => setDate(shiftDate(date, -1))}>
-          ‹ 前一天
+        <button
+          className="date-nav-btn"
+          aria-label="前一天"
+          onClick={() => setDate(shiftDate(date, -1))}
+        >
+          <span className="ic ic-chevron-left" />
         </button>
-        <input
-          type="date"
-          className="date-nav-input"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-        <button className="btn btn-sm btn-ghost" onClick={() => setDate(shiftDate(date, 1))}>
-          后一天 ›
+        <div className="date-nav-center">
+          <span className="date-nav-label">{formatDateDisplay(date)}</span>
+          <input
+            type="date"
+            className="date-nav-input"
+            value={date}
+            max={todayStr()}
+            onChange={(e) => {
+              if (e.target.value <= todayStr()) setDate(e.target.value);
+            }}
+          />
+        </div>
+        <button
+          className="date-nav-btn"
+          aria-label="后一天"
+          disabled={date >= todayStr()}
+          onClick={() => setDate(shiftDate(date, 1))}
+        >
+          <span className="ic ic-chevron-right" />
         </button>
         {date !== todayStr() && (
-          <button className="btn btn-sm btn-ghost" onClick={() => setDate(todayStr())}>
-            回到今天
+          <button className="date-nav-today" onClick={() => setDate(todayStr())}>
+            <span className="ic ic-today" />
+            今天
           </button>
         )}
       </div>
@@ -127,7 +151,8 @@ export function MealRecordPage() {
 
           <div className="day-summary-action">
             <button className="btn btn-primary" onClick={() => setShowMealTypeChooser(true)}>
-              + 记录一餐
+              <span className="ic ic-plus" />
+              记录一餐
             </button>
             {showMealTypeChooser && (
               <div className="meal-type-chooser">
@@ -140,6 +165,7 @@ export function MealRecordPage() {
                       setShowMealTypeChooser(false);
                     }}
                   >
+                    <span className={`ic ${MEAL_ICONS[mt.value]}`} />
                     {mt.label}
                   </button>
                 ))}
@@ -183,13 +209,17 @@ export function MealRecordPage() {
             return (
               <div key={mt.value} className="meal-day-row">
                 <div className="meal-day-row-header">
-                  <h3>{mt.label}</h3>
+                  <h3>
+                    <span className={`ic ${MEAL_ICONS[mt.value]}`} />
+                    {mt.label}
+                  </h3>
                   {!record && (
                     <button
                       className="btn btn-sm btn-ghost"
                       onClick={() => setCreateMealType(mt.value)}
                     >
-                      + 添加{mt.label}
+                      <span className="ic ic-plus" />
+                      添加{mt.label}
                     </button>
                   )}
                 </div>

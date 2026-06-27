@@ -57,7 +57,8 @@ export function FoodTemplatePage() {
       <header className="page-header">
         <h1>常用食物模板</h1>
         <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-          + 新增模板
+          <span className="ic ic-plus" />
+          新增模板
         </button>
       </header>
 
@@ -118,12 +119,14 @@ export function FoodTemplatePage() {
                 <td>{t.portions_per_unit}</td>
                 <td className="template-table-actions">
                   <button className="btn btn-sm btn-ghost" onClick={() => setEditing(t)}>
+                    <span className="ic ic-edit" />
                     编辑
                   </button>
                   <button
                     className="btn btn-sm btn-danger"
                     onClick={() => handleDelete(t.id)}
                   >
+                    <span className="ic ic-trash" />
                     删除
                   </button>
                 </td>

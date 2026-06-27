@@ -33,12 +33,15 @@ export function MealRecordCard({ record, onEdit, onDelete }: Props) {
 
       <div className="card-actions">
         <button className="btn btn-sm btn-ghost" onClick={() => onEdit(record)}>
+          <span className="ic ic-edit" />
           编辑
         </button>
         <button className="btn btn-sm btn-ghost" onClick={() => onEdit(record)}>
-          + 继续添加
+          <span className="ic ic-plus" />
+          继续添加
         </button>
         <button className="btn btn-sm btn-danger" onClick={() => onDelete(record.id)}>
+          <span className="ic ic-trash" />
           删除
         </button>
       </div>
