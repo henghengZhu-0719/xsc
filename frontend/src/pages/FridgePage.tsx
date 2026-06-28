@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { fridgeApi } from "../api/fridge";
 import { CategoryFilter } from "../components/CategoryFilter";
 import { FridgeItemCard } from "../components/FridgeItemCard";
-import { FridgeItemForm } from "../components/FridgeItemForm";
+import { AddFridgeItemPage } from "./AddFridgeItemPage";
 import { FoodTemplatePage } from "./FoodTemplatePage";
 import type { FridgeItem, FridgeItemInput } from "../types";
 
@@ -83,20 +83,11 @@ export function FridgePage({ onClose }: Props) {
       <CategoryFilter value={category} onChange={setCategory} />
 
       {showForm && (
-        <div className="modal-overlay" onClick={() => setShowForm(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>添加食材</h2>
-            <FridgeItemForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />
-          </div>
-        </div>
+        <AddFridgeItemPage onSubmit={handleCreate} onBack={() => setShowForm(false)} />
       )}
 
       {showTemplates && (
-        <div className="modal-overlay" onClick={() => setShowTemplates(false)}>
-          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
-            <FoodTemplatePage />
-          </div>
-        </div>
+        <FoodTemplatePage onBack={() => setShowTemplates(false)} />
       )}
 
       {loading && <p className="hint">加载中...</p>}

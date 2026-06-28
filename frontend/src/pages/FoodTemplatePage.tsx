@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import { foodTemplateApi } from "../api/foodTemplate";
 import { CategoryFilter } from "../components/CategoryFilter";
-import { FoodTemplateForm } from "../components/FoodTemplateForm";
+import { AddEditTemplatePage } from "./AddEditTemplatePage";
 import type { FoodTemplate, FoodTemplateInput } from "../types";
 
-export function FoodTemplatePage() {
+interface Props {
+  onBack?: () => void;
+}
+
+export function FoodTemplatePage({ onBack }: Props) {
   const [templates, setTemplates] = useState<FoodTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCreate, setShowCreate] = useState(false);
-  const [editing, setEditing] = useState<FoodTemplate | null>(null);
+  const [formState, setFormState] = useState<{ editing?: FoodTemplate } | null>(null);
   const [category, setCategory] = useState("全部");
 
   const loadTemplates = async () => {
@@ -30,14 +33,14 @@ export function FoodTemplatePage() {
 
   const handleCreate = async (data: FoodTemplateInput) => {
     await foodTemplateApi.create(data);
-    setShowCreate(false);
+    setFormState(null);
     await loadTemplates();
   };
 
   const handleUpdate = async (data: FoodTemplateInput) => {
-    if (!editing) return;
-    await foodTemplateApi.update(editing.id, data);
-    setEditing(null);
+    if (!formState?.editing) return;
+    await foodTemplateApi.update(formState.editing.id, data);
+    setFormState(null);
     await loadTemplates();
   };
 
@@ -53,10 +56,19 @@ export function FoodTemplatePage() {
       : templates.filter((t) => t.category === category);
 
   return (
-    <div className="page">
+    <div className="fridge-overlay">
+      <div className="page">
       <header className="page-header">
-        <h1>常用食物模板</h1>
-        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+        <div className="page-header-left">
+          {onBack && (
+            <button className="btn btn-ghost btn-sm" onClick={onBack}>
+              <span className="ic ic-chevron-left" />
+              返回
+            </button>
+          )}
+          <h1>常用食物模板</h1>
+        </div>
+        <button className="btn btn-primary" onClick={() => setFormState({})}>
           <span className="ic ic-plus" />
           新增模板
         </button>
@@ -68,26 +80,12 @@ export function FoodTemplatePage() {
 
       <CategoryFilter value={category} onChange={setCategory} />
 
-      {(showCreate || editing) && (
-        <div
-          className="modal-overlay"
-          onClick={() => {
-            setShowCreate(false);
-            setEditing(null);
-          }}
-        >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editing ? "编辑模板" : "新增模板"}</h2>
-            <FoodTemplateForm
-              initial={editing ?? undefined}
-              onSubmit={editing ? handleUpdate : handleCreate}
-              onCancel={() => {
-                setShowCreate(false);
-                setEditing(null);
-              }}
-            />
-          </div>
-        </div>
+      {formState !== null && (
+        <AddEditTemplatePage
+          initial={formState.editing}
+          onSubmit={formState.editing ? handleUpdate : handleCreate}
+          onBack={() => setFormState(null)}
+        />
       )}
 
       {loading && <p className="hint">加载中...</p>}
@@ -118,7 +116,7 @@ export function FoodTemplatePage() {
                 <td>{t.default_unit ?? "-"}</td>
                 <td>{t.portions_per_unit}</td>
                 <td className="template-table-actions">
-                  <button className="btn btn-sm btn-ghost" onClick={() => setEditing(t)}>
+                  <button className="btn btn-sm btn-ghost" onClick={() => setFormState({ editing: t })}>
                     <span className="ic ic-edit" />
                     编辑
                   </button>
@@ -135,6 +133,7 @@ export function FoodTemplatePage() {
           </tbody>
         </table>
       )}
+      </div>
     </div>
   );
 }

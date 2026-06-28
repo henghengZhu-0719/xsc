@@ -3,7 +3,7 @@ import Markdown from "react-markdown";
 import { aiApi, type DailySummaryData } from "../api/ai";
 import { mealApi } from "../api/meal";
 import { MealRecordCard } from "../components/MealRecordCard";
-import { MealRecordForm } from "../components/MealRecordForm";
+import { AddEditMealPage } from "./AddEditMealPage";
 import { CATEGORY_EMOJI, MEAL_TYPES } from "../constants";
 import type { MealRecord, MealRecordInput } from "../types";
 
@@ -233,27 +233,16 @@ export function MealRecordPage() {
       )}
 
       {(createMealType || editing) && (
-        <div
-          className="modal-overlay"
-          onClick={() => {
+        <AddEditMealPage
+          initial={editing ?? undefined}
+          defaultDate={date}
+          defaultMealType={createMealType ?? undefined}
+          onSubmit={editing ? handleUpdate : handleCreate}
+          onBack={() => {
             setCreateMealType(null);
             setEditing(null);
           }}
-        >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editing ? "编辑记录" : "记一顿饭"}</h2>
-            <MealRecordForm
-              initial={editing ?? undefined}
-              defaultDate={date}
-              defaultMealType={createMealType ?? undefined}
-              onSubmit={editing ? handleUpdate : handleCreate}
-              onCancel={() => {
-                setCreateMealType(null);
-                setEditing(null);
-              }}
-            />
-          </div>
-        </div>
+        />
       )}
 
       {loading && <p className="hint">加载中...</p>}
